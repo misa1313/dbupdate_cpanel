@@ -3,7 +3,7 @@
 
 #SQL mode
 sqlm() {
-echo -e "What's your slack username?"
+echo -e "Enter a username?"
 read username
 clear
 if [[ ! -f "/etc/my.cnf.$username" ]]; then  
