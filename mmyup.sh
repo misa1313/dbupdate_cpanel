@@ -118,7 +118,8 @@ while true; do
             echo "Invalid option, choose again."
 	    read vers
 	fi
-done 
+done
+ 
 id=$(/usr/local/cpanel/bin/whmapi1 start_background_mysql_upgrade version=$vers|grep "upgrade_id" | cut -d ":" -f2)
 id="${id:1}"
 echo -e "\nWHM Upgrade ID: $id"
