@@ -3,7 +3,7 @@
 
 #SQL mode
 sqlm() {
-echo -e "Enter a username?"
+echo -e "What's your slack username?"
 read username
 clear
 if [[ ! -f "/etc/my.cnf.$username" ]]; then  
@@ -100,7 +100,7 @@ echo -e "List of available versions:\n"
 echo -e "\nWhich one are you installing? Only numbers (5.7, 10.3, etc.)"
 read vers
 while true; do 
- 	if  [[ "$vers" == '10.1' ]] || [[ "$vers" == '10.2' ]] || [[ "$vers" == '10.3' ]] || [[ "$vers" == '5.6' ]] || [[ "$vers" == '5.7' ]] || [[ "$vers" == '8.0' ]]; then
+ 	if  [[ "$vers" == '10.1' ]] || [[ "$vers" == '10.2' ]] || [[ "$vers" == '10.3' ]] || [[ "$vers" == '10.5' ]] || [[ "$vers" == '5.6' ]] || [[ "$vers" == '5.7' ]] || [[ "$vers" == '8.0' ]]; then
 	#check here add vers
 	    break
 	else
@@ -199,14 +199,14 @@ elif [[ "$mysqlv" == "5.7."* ]]; then
     upgrade_do
     post_check
 
-elif [[ "$mysqlv" == "10.1."* || "$mysqlv" == "10.3."* ]]; then
+elif [[ "$mysqlv" == "10.1."* || "$mysqlv" == "10.2."* || "$mysqlv" == "10.3."* ]]; then
     sqlm
     echo "System version is $mysqlv"
     pre_checks
     upgrade_do
     post_check
     
-elif [[ "$mysqlv" == "10.4."* || "$mysqlv" == "8.0."* ]]; then
+elif [[ "$mysqlv" == "10.5."* || "$mysqlv" == "8.0."* ]]; then
     echo -e "You are already on the latest version.\n"
 else 
     echo -e "This is a not supported upgrade.\n"
