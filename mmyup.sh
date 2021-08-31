@@ -2,7 +2,7 @@
 
 if [[ ! -f "/usr/local/cpanel/cpanel" ]]; then
 	echo -e "This is intended to run on cPanel servers"
-	kill -STOP $$
+	kill -9 $$
 else
 	break
 fi
