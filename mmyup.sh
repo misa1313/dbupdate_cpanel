@@ -31,6 +31,16 @@ stopp() {
         kill -STOP $$
 }
 
+#Exit status
+exit_status() {
+e_status=`echo $?`
+if [[ "$e_status" == "0" ]]; then
+        break
+else
+        stopp
+fi
+}
+
 #Pre-work for 5.6-5.7/10.0
 prepre() {
 echo "Deprecated MySQL Variables 5.6 ---> 5.7: ";egrep -wi 'innodb\_additional\_mem\_pool\_size|safe\_show\_database|skip\_locking|skip\_symlink|master-*|log\-slow\-queries|innodb\_additional\_mem\_pool\_size|innodb\_use\_sys\_malloc|storage\_engine|create\_old\_temporals|default-authentication-plugin|thread_concurrency|timed\_mutexes|log-slow-admin-statements|log-slow-slave-statements' /etc/my.cnf;echo;echo "MySQL Datadir: ";mysql -e "show variables;" |grep datadir;echo;echo "Users with Old Style Passwords: "; if [[ $(mysql -e "SELECT Host, User, Password AS Hash FROM mysql.user WHERE Password REGEXP '^[0-9a-fA-F]{16}' ORDER BY User, Host;"|wc -l) > 0 ]];then echo "Yes";else echo "No"; echo; echo -e "\e[1;31mWARNING: MySQL 5.7's sys schema can break databases when upgrading to MariaDB\e[0m";fi; echo
@@ -74,17 +84,18 @@ pre_checks() {
     echo -e "\nRsync data dir:\n"
     ddir=$(mysql -e "show variables;" |grep datadir| awk {'print $2'})
     bakdir=$(echo "$ddir"|rev | cut -c2-|rev)
-    (systemctl stop mysql.service && echo -e "-MYSQL has been stopped") || (service mysql stop > /dev/null && echo -e "-MYSQL has been stopped*") || (service mysqld stop > /dev/null && echo -e "-MYSQL has been stopped**")
+    (systemctl stop mysql.service && echo -e "MYSQL has been stopped") || (service mysql stop > /dev/null && echo -e "MYSQL has been stopped*") || (service mysqld stop > /dev/null && echo -e "MYSQL has been stopped**")
     sleep 1 && echo
     echo "Path to data dir: $ddir"
-    echo "rsync -avHl $ddir $bakdir.backup/"
-    rsyncr=$(rsync -avHl $ddir $bakdir.backup/); echo $rsyncr|tail -n3| awk -F 'sent ' '{print FS $2}'
-    echo 
+    echo "rsync -aHl $ddir $bakdir.backup/"
+    rsync -aHl $ddir $bakdir.backup/
+    exit_status
+    echo -e "Synced\n" 
     echo "Restarting MYSQL..."
     (systemctl restart mysql.service && echo -e "Restarted") || (/scripts/restartsrv_mysql > /dev/null && echo -e "Restarted*") || (service mysql restart > /dev/null && echo -e "Restarted**") || (service mysqld restart > /dev/null && echo -e "Restarted***")
     sleep 3
 
-    echo -e "\n\nChecking HTTP status of all domains prior the upgrade:\n"
+    echo -e "\n\n-Checking HTTP status of all domains prior the upgrade:\n"
     if [[ ! -d "/home/temp" ]]; then
     	mkdir /home/temp
     fi
@@ -112,17 +123,20 @@ id=$(/usr/local/cpanel/bin/whmapi1 start_background_mysql_upgrade version=$vers|
 id="${id:1}"
 echo -e "\nWHM Upgrade ID: $id"
 sleep 1
-watch -n1 "echo "Use Ctrl + c to exit this screen and resume the script once upgrade finishes."; /usr/local/cpanel/bin/whmapi1 background_mysql_upgrade_status upgrade_id=$id| tail -n6"
 aver=$(/usr/local/cpanel/bin/whmapi1 background_mysql_upgrade_status upgrade_id=$id| tail -n6|grep "state:"| cut -d ":" -f2| awk '{print $1;}')
+echo -e "\nUpgrading..."
+BAR='#'
 while [[ "$aver" == "inprogress" ]]; do
-        watch -n1 "echo "Wait until it finishes! Use Ctrl + c to exit."; /usr/local/cpanel/bin/whmapi1 background_mysql_upgrade_status upgrade_id=$id| tail -n6"
-	aver=$(/usr/local/cpanel/bin/whmapi1 background_mysql_upgrade_status upgrade_id=$id| tail -n6|grep "state:"| cut -d ":" -f2| awk '{print $1;}')
+	echo -ne "${BAR}"
+	sleep 2
+        aver=$(/usr/local/cpanel/bin/whmapi1 background_mysql_upgrade_status upgrade_id=$id| tail -n6|grep "state:"| cut -d ":" -f2| awk '{print $1;}')
 done
-sleep 1
+sleep 2
 if [[ "$aver" == "failed" || "$aver" == "failure" ]]; then
-	echo "Check the log at /var/cpanel/logs/$id/unattended_background_upgrade.log"
+	echo -e "\nCheck the log at /var/cpanel/logs/$id/unattended_background_upgrade.log"
 	stopp
 else
+echo -e "\n"
 /usr/local/cpanel/bin/whmapi1 background_mysql_upgrade_status upgrade_id=$id| tail -n6
 fi
 }
@@ -199,14 +213,14 @@ elif [[ "$mysqlv" == "5.7."* ]]; then
     upgrade_do
     post_check
 
-elif [[ "$mysqlv" == "10.1."* || "$mysqlv" == "10.2."* || "$mysqlv" == "10.3."* ]]; then
+elif [[ "$mysqlv" == "10.1."* || "$mysqlv" == "10.2."* || "$mysqlv" == "10.5."* ]]; then
     sqlm
     echo "System version is $mysqlv"
     pre_checks
     upgrade_do
     post_check
     
-elif [[ "$mysqlv" == "10.5."* || "$mysqlv" == "8.0."* ]]; then
+elif [[ "$mysqlv" == "10.6."* || "$mysqlv" == "8.0."* ]]; then
     echo -e "You are already on the latest version.\n"
 else 
     echo -e "This is a not supported upgrade.\n"
