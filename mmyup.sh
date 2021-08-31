@@ -1,9 +1,15 @@
 #! /bin/sh
 
+if [[ ! -f "/usr/local/cpanel/cpanel" ]]; then
+	echo -e "This is intended to run on cPanel servers"
+	kill -STOP $$
+else
+	break
+fi
 
 #SQL mode
 sqlm() {
-echo -e "What's your slack username?"
+echo -e "What's your username?"
 read username
 clear
 if [[ ! -f "/etc/my.cnf.$username" ]]; then  
