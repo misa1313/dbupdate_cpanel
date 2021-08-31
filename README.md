@@ -13,6 +13,7 @@ A bash script to automatically upgrade the database management system on cPanel 
     10.1 (MariaDB)
     10.2 (MariaDB)
     10.3 (MariaDB)
+    10.5 (MariaDB)
 ```
 
 ## Features:
