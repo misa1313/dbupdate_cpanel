@@ -171,7 +171,7 @@ if [[ "$(cat /etc/redhat-release)" == *"CloudLinux"* ]]; then
     	echo $answ2
     	echo -e "\nUpgrade using governor:"
     	exe eval '/usr/share/lve/dbgovernor/mysqlgovernor.py --mysql-version=$answ2'
-    	exe eval '/usr/share/lve/dbgovernor/mysqlgovernor.py --install'
+    	exe eval '/usr/share/lve/dbgovernor/mysqlgovernor.py --install --yes'
 	exe eval 'mysql_upgrade'
     else
     	echo "Ok, cPanel upgrade then."
