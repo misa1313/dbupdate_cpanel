@@ -1,4 +1,4 @@
-# mysql_auto
+# dbupdate_cpanel
 
 A bash script to automatically upgrade the database management system on cPanel servers. Tested on CentOS 6 and 7.
 
