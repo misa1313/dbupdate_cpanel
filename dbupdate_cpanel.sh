@@ -220,14 +220,14 @@ elif [[ "$mysqlv" == "5.7."* ]]; then
     upgrade_do
     post_check
 
-elif [[ "$mysqlv" == "10.1."* || "$mysqlv" == "10.2."* || "$mysqlv" == "10.3."* ]]; then
+elif [[ "$mysqlv" == "10.1."* || "$mysqlv" == "10.2."* || "$mysqlv" == "10.3."* || "$mysqlv" == "10.5."* ]]; then
     sqlm
     echo "System version is $mysqlv"
     pre_checks
     upgrade_do
     post_check
     
-elif [[ "$mysqlv" == "10.5."* || "$mysqlv" == "8.0."* ]]; then
+elif [[ "$mysqlv" == "10.6."* || "$mysqlv" == "8.0."* ]]; then
     echo -e "You are already on the latest version.\n"
 else 
     echo -e "This is a not supported upgrade.\n"
